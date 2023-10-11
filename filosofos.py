@@ -1,4 +1,4 @@
-import threading  # Importamos una biblioteca que nos permite trabajar con hilos o "threads" para simular a los filósofos.
+import threading 
 import time
 
 # Definimos una clase llamada "Semaphore" que nos permite controlar el acceso a recursos compartidos.
@@ -7,6 +7,8 @@ class Semaphore:
         self.lock = threading.Condition(threading.Lock())  # Creamos una especie de cerrojo o "lock" que ayuda a mantener el orden.
         self.value = initial  # Guardamos el número inicial de recursos disponibles.
 
+    # Up y Down se usa para aumentar o disminuir el valor del semaforo
+    
     def up(self):  # Esta función permite aumentar el número de recursos disponibles.
         with self.lock:  # Usamos el cerrojo para asegurarnos de que nadie más toque los recursos al mismo tiempo.
             self.value += 1  # Agregamos un recurso.
@@ -24,7 +26,7 @@ class Chopstick:
         self.id = id
         self.user = -1  # Inicialmente, ningún filósofo está usando el palillo.
         self.lock = threading.Condition(threading.Lock())  # Al igual que con el "Semaphore," usamos un cerrojo para controlar el acceso.
-        self.taken = False  # Inicialmente, el palillo no está siendo usado por nadie.
+        self.taken = False  # Inicialmente, el palillo no está siendo usado por nadie. Este es el estado por si alguien lo esta usando. 
 
     def take(self, user):  # Esta función permite a un filósofo tomar un palillo.
         with self.lock:  # Usamos el cerrojo para asegurarnos de que solo un filósofo tome el palillo a la vez.
@@ -54,7 +56,7 @@ class Philosopher(threading.Thread):
         self.butler = butler  # Usamos un "butler" (mayordomo) para controlar el acceso de los filósofos a la mesa.
 
     def run(self):  # Esta función representa lo que hace un filósofo cuando comienza a "pensar" y "comer."
-        for _ in range(2):  # Cada filósofo "piensa" y "come" dos veces.
+        for _ in range(1):  # Cada filósofo "piensa" y "come" 1 vece.
             self.butler.down()  # El filósofo le pide permiso al mayordomo para sentarse en la mesa.
             print(f"Filosofo {self.id} está pensando\n")  # Mostramos un mensaje de que el filósofo está pensando.
             time.sleep(0.1)  # Esperamos un poquito (0.1 segundos) para simular el pensamiento.
@@ -69,7 +71,7 @@ class Philosopher(threading.Thread):
         print(f"El filósofo {self.id} ha terminado de pensar y comer")  # Mostramos un mensaje cuando el filósofo termina.
 
 def main():
-    num_philosophers = 6  # Hay 6 filósofos en la mesa.
+    num_philosophers = 5  # Hay 6 filósofos en la mesa.
     butler = Semaphore(num_philosophers - 1)  # Creamos un mayordomo que controla el acceso de los filósofos.
     chopsticks = [Chopstick(i) for i in range(num_philosophers)]  # Creamos los palillos para que los usen los filósofos.
     philosophers = [Philosopher(i, chopsticks[i], chopsticks[(i + 1) % num_philosophers], butler) for i in range(num_philosophers)]  # Creamos a los filósofos y les damos los palillos y el mayordomo.
