@@ -9,40 +9,60 @@ class DiningPhilosophers:
     C - Comiendo 
     F - Finalizado
     '''
-    def __init__(self, number_of_philosophers, meal_size=9):
+    def __init__(self, number_of_philosophers, meal_size=1):
         self.meals = [meal_size for _ in range(number_of_philosophers)]
         self.chopsticks = [Semaphore(value=1) for _ in range(number_of_philosophers)]
-        self.status = ['  P ' for _ in range(number_of_philosophers)]
-        self.chopstick_holders = ['  ' for _ in range(number_of_philosophers)]
+        self.status = ['   U' for _ in range(number_of_philosophers)]
+        self.chopstick_holders = ['     ' for _ in range(number_of_philosophers)]
         self.number_of_philosophers = number_of_philosophers
 
     def philosopher(self, i):
         j = (i + 1) % self.number_of_philosophers
         while self.meals[i] > 0:
-            self.status[i] = '  P '
+            self.status[i] = '   P'
             time.sleep(random.random())
-            self.status[i] = '   E '
-            if self.chopsticks[i].acquire(timeout=1):
-                self.chopstick_holders[i] = ' _/  '
-                time.sleep(random.random())
-                if self.chopsticks[j].acquire(timeout=1):
-                    self.chopstick_holders[i] = '_/\\_'
-                    self.status[i] = '  C '
+            self.status[i] = '   E'
+            first_chopstick = i 
+            second_chopstick = j 
+            # Seleccionar el primer tenedor disponible
+            if self.chopsticks[i]._value > 0: 
+                if self.chopsticks[first_chopstick].acquire(timeout=1):
+                    self.chopstick_holders[i] = ' ↙️  '
+                    
+                    # Intentar adquirir el segundo tenedor (derecho)
+                    if self.chopsticks[second_chopstick].acquire(timeout=1):
+                        self.chopstick_holders[i] =' ↙️ ↘️'
+                        self.status[i] = '   C'
+                        time.sleep(random.random())
+                        self.meals[i] -= 1
+                        self.chopsticks[second_chopstick].release()
+                        self.chopstick_holders[i] =  ' ↙️  '
+                    self.chopsticks[first_chopstick].release()
+                    self.chopstick_holders[i] =  '    '   
+                    self.status[i] = '   P'
+            else: 
+                if self.chopsticks[second_chopstick].acquire(timeout =1): 
+                    self.chopstick_holders[i] = '   ↘️'
                     time.sleep(random.random())
-                    self.meals[i] -= 1
-                    self.chopsticks[j].release()
-                    self.chopstick_holders[i] =  ' _/  '
-                self.chopsticks[i].release()
-                self.chopstick_holders[i] =  '    '
-                self.status[i] = '  P '
-            self.status[i] = '  F ' 
+                    if self.chopsticks[first_chopstick].acquire(timeout=1):
+                        self.chopstick_holders[i] =' ↙️ ↘️'
+                        self.status[i] = '   C'
+                        time.sleep(random.random())
+                        self.meals[i] -= 1
+                        self.chopsticks[second_chopstick].release()
+                        self.chopstick_holders[i] =  '   ↘️'
+                    self.chopsticks[first_chopstick].release()
+                    self.chopstick_holders[i] =  '    '
+                    self.status[i] = '   P'
+            self.status[i] = '   F'
 
     def print_status(self):
         header = "=" * (self.number_of_philosophers * 7)
         status_str = " ".join(self.status)
         holders_str = " ".join(self.chopstick_holders)
         total_meals = str(sum(self.meals))
-        holders = [f"    {i} " for i in range(self.number_of_philosophers)]
+        holders = [f"{i}   " if i != 5 else "0   " for i in range(self.number_of_philosophers + 1)]
+
 
         print(header.center(len(header)))
         print(status_str.center(len(status_str)))
@@ -53,10 +73,8 @@ class DiningPhilosophers:
 
 def main():
     n = 5
-    m = 1
-    dining_philosophers = DiningPhilosophers(n, m)
+    dining_philosophers = DiningPhilosophers(n)
     philosophers = [Thread(target=dining_philosophers.philosopher, args=(i,)) for i in range(n)]
-    random.shuffle(philosophers)
 
     for philosopher in philosophers:
         philosopher.start()
