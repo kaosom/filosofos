@@ -3,49 +3,53 @@ import random
 import time
 
 class DiningPhilosophers:
+    '''
+    P - Pensando 
+    E - Esperando 
+    C - Comiendo 
+    F - Finalizado
+    '''
     def __init__(self, number_of_philosophers, meal_size=9):
         self.meals = [meal_size for _ in range(number_of_philosophers)]
         self.chopsticks = [Semaphore(value=1) for _ in range(number_of_philosophers)]
-        self.status = ['  P  ' for _ in range(number_of_philosophers)]
+        self.status = ['  P ' for _ in range(number_of_philosophers)]
         self.chopstick_holders = ['  ' for _ in range(number_of_philosophers)]
         self.number_of_philosophers = number_of_philosophers
 
     def philosopher(self, i):
         j = (i + 1) % self.number_of_philosophers
         while self.meals[i] > 0:
-            self.status[i] = '  P  '
+            self.status[i] = '  P '
             time.sleep(random.random())
-            self.status[i] = '  E  '
+            self.status[i] = '   E '
             if self.chopsticks[i].acquire(timeout=1):
-                self.chopstick_holders[i] = '_/   '
+                self.chopstick_holders[i] = ' _/  '
                 time.sleep(random.random())
                 if self.chopsticks[j].acquire(timeout=1):
-                    self.chopstick_holders[i] = '_/ \\_ '
-                    self.status[i] = '  C  '
+                    self.chopstick_holders[i] = '_/\\_'
+                    self.status[i] = '  C '
                     time.sleep(random.random())
                     self.meals[i] -= 1
                     self.chopsticks[j].release()
-                    self.chopstick_holders[i] =  '_/   '
+                    self.chopstick_holders[i] =  ' _/  '
                 self.chopsticks[i].release()
-                self.chopstick_holders[i] =  '     '
-                self.status[i] = '  P  '
-            self.status[i] = '  F  ' 
+                self.chopstick_holders[i] =  '    '
+                self.status[i] = '  P '
+            self.status[i] = '  F ' 
 
     def print_status(self):
-        header = "=" * (self.number_of_philosophers * 6)
+        header = "=" * (self.number_of_philosophers * 7)
         status_str = " ".join(self.status)
         holders_str = " ".join(self.chopstick_holders)
-        meals_str = " ".join([f"{m:3d}" for m in self.meals])
         total_meals = str(sum(self.meals))
-        holders = [f"    {i}" for i in range(self.number_of_philosophers)]
+        holders = [f"    {i} " for i in range(self.number_of_philosophers)]
 
         print(header.center(len(header)))
         print(status_str.center(len(status_str)))
         print(holders_str.center(len(holders_str)))
-        #print(meals_str.center(len(meals_str)))
-        holders_chop = " ".join(holders)  # Muestra los identificadores de los palillos
+        holders_chop = " ".join(holders) 
         print(holders_chop.center(len(holders_chop)))
-        print(f"Total Meals: {total_meals}".center(len(header)))
+        print(f"Comidas totales: {total_meals}".center(len(header)))
 
 def main():
     n = 5
